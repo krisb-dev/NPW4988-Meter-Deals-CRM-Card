@@ -1,0 +1,12 @@
+{
+  "uid": "app-function-update-meters-Deals-Meter-CRM-Card",
+  "type": "app-function",
+  "config": {
+    "entrypoint": "/app/functions/updateMeters.js",
+    "endpoint": {
+      "path": "/api/v1/update-meters",
+      "methods": ["POST"]
+    },
+    "secretKeys": ["HS_ACCESS_TOKEN"]
+  }
+}

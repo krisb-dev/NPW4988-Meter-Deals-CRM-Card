@@ -1,0 +1,12 @@
+{
+  "uid": "app-function-Deals-Meter-CRM-Card",
+  "type": "app-function",
+  "config": {
+    "entrypoint": "/app/functions/getMeters.js",
+    "endpoint": {
+      "path": "/api/v1/get-meters",
+      "methods": ["POST"]
+    },
+    "secretKeys": ["HS_ACCESS_TOKEN"]
+  }
+}

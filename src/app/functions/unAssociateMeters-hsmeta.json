@@ -1,0 +1,12 @@
+{
+  "uid": "app-function-Unassociate-Meters-Deals-Meter-CRM-Card",
+  "type": "app-function",
+  "config": {
+    "entrypoint": "/app/functions/unAssociateMeters.js",
+    "endpoint": {
+      "path": "/api/v1/unassociate-meters",
+      "methods": ["POST"]
+    },
+    "secretKeys": ["HS_ACCESS_TOKEN"]
+  }
+}
