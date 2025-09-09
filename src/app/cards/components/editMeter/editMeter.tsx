@@ -11,9 +11,9 @@ import {
   List,
   LoadingButton,
   LoadingSpinner,
-  Panel,
-  PanelBody,
-  PanelSection,
+  Modal,
+  ModalBody,
+  ModalFooter,
   Text,
 } from "@hubspot/ui-extensions";
 import { Meter, MeterMutation } from "../types";
@@ -29,7 +29,7 @@ interface EditMeterProps {
   singleEdit?: boolean;
 }
 
-const parseDateForHubSpot = (dateString: string): string | null => {
+const parseDateForHubSpot = (dateString: string | undefined): string | null => {
   if (!dateString || dateString.trim() === "") return null;
 
   const dateParts = dateString.split("/");
@@ -39,6 +39,25 @@ const parseDateForHubSpot = (dateString: string): string | null => {
   const paddedDay = day.toString().padStart(2, "0");
 
   return `${year}-${paddedMonth}-${paddedDay}`;
+};
+
+const parseDateForInput = (
+  dateString: string,
+  singleEdit?: boolean
+): { year: number; month: number; date: number } | undefined => {
+  // Returns undefined if not in singleEdit mode
+  if (!singleEdit) return undefined;
+
+  const dateArr = dateString.split("-");
+
+  const year = parseInt(dateArr[0]);
+  const month = parseInt(dateArr[1]) - 1;
+  const date = parseInt(dateArr[2]);
+  return {
+    year,
+    month,
+    date,
+  };
 };
 
 const EditMeter = ({
@@ -107,57 +126,78 @@ const EditMeter = ({
   };
 
   return (
-    <Panel id="edit-meter-panel" title="Edit Meter Properties">
-      <PanelBody>
-        <PanelSection>
-          {singleEdit ? (
-            <>
-              <Text>Editing single meter</Text>
-            </>
-          ) : (
-            <>
-              <Text>You are editing the following MPXNs:</Text>
-              <List variant="unordered-styled">
-                {meters?.map((meter) => (
-                  <Text key={meter.id}>{meter.properties.mpxn}</Text>
-                ))}
-              </List>
-            </>
-          )}
+    <Modal id="edit-meter-panel" title="Edit Meter Properties" width="large">
+      <ModalBody>
+        {singleEdit ? (
+          <>
+            <Text>Editing single meter - {meters[0]?.properties?.mpxn}</Text>
+          </>
+        ) : (
+          <>
+            <Text>You are editing the following MPXNs:</Text>
+            <List variant="unordered-styled">
+              {meters?.map((meter) => (
+                <Text key={meter.id}>{meter.properties.mpxn}</Text>
+              ))}
+            </List>
+          </>
+        )}
 
-          {isUpdating && (
-            <Flex>
-              <LoadingSpinner
-                showLabel={true}
-                label="Updating meters"
-                size="small"
-              />
-            </Flex>
-          )}
-          {isSuccess && (
-            <Alert variant="success" title="Meters updated">
-              You can now close this panel
-            </Alert>
-          )}
-          {isError && (
-            <Alert variant="error" title="Error updating meters">
-              Something went wrong, please try again
-            </Alert>
-          )}
+        {isUpdating && (
+          <Flex>
+            <LoadingSpinner
+              showLabel={true}
+              label="Updating meters"
+              size="small"
+            />
+          </Flex>
+        )}
+        {isSuccess && (
+          <Alert variant="success" title="Meters updated">
+            You can now close this panel
+          </Alert>
+        )}
+        {isError && (
+          <Alert variant="error" title="Error updating meters">
+            Something went wrong, please try again
+          </Alert>
+        )}
 
-          <Form onSubmit={(values) => handleFormSubmit(values)}>
-            {JSON.stringify(meters)}
-            {singleEdit && meters.length > 0 && (
-              <Input
-                label="MPXN"
-                name="mpxn"
-                readOnly={true}
-                value={meters[0]?.properties.mpxn}
-              />
-            )}
-            <Flex direction="column" gap="sm">
-              <DateInput label="Supply Start Date" name="supply_start_date" />
-              <DateInput label="Supply End Date" name="supply_end_date" />
+        <Form onSubmit={(values) => handleFormSubmit(values)}>
+          {singleEdit && meters.length > 0 && (
+            <Input
+              label="MPXN"
+              name="mpxn"
+              readOnly={true}
+              value={meters[0]?.properties.mpxn}
+            />
+          )}
+          <Flex direction="column" gap="sm">
+            <DateInput
+              label="Supply Start Date"
+              name="supply_start_date"
+              value={
+                meters[0]?.properties.supply_start_date
+                  ? parseDateForInput(
+                      meters[0]?.properties.supply_start_date,
+                      singleEdit
+                    )
+                  : undefined
+              }
+            />
+            <DateInput
+              label="Supply End Date"
+              name="supply_end_date"
+              value={
+                meters[0]?.properties.supply_end_date
+                  ? parseDateForInput(
+                      meters[0]?.properties.supply_end_date,
+                      singleEdit
+                    )
+                  : undefined
+              }
+            />
+            <ModalFooter>
               <Flex gap="sm">
                 <LoadingButton
                   variant="primary"
@@ -176,11 +216,11 @@ const EditMeter = ({
                   Back
                 </Button>
               </Flex>
-            </Flex>
-          </Form>
-        </PanelSection>
-      </PanelBody>
-    </Panel>
+            </ModalFooter>
+          </Flex>
+        </Form>
+      </ModalBody>
+    </Modal>
   );
 };
 
