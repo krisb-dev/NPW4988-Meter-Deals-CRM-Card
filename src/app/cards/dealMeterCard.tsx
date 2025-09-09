@@ -238,6 +238,7 @@ const Extension = ({ context, actions, addAlert, runServerlessFunction }) => {
             updateQueue={state.updateQueue}
             meterDispatch={dispatch}
             actions={actions}
+            handleMutateMeters={handleMutateMeters}
           />
           <ButtonRow>
             <Button

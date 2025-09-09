@@ -24,9 +24,16 @@ interface MeterTableProps {
   actions: {
     closeOverlay: CloseOverlayAction;
   };
+  handleMutateMeters: (action: string) => void;
 }
 
-const MeterTable = ({ meters, meterDispatch, updateQueue, actions }) => {
+const MeterTable = ({
+  meters,
+  meterDispatch,
+  updateQueue,
+  actions,
+  handleMutateMeters,
+}) => {
   return (
     <>
       <Table bordered={true}>
@@ -47,6 +54,7 @@ const MeterTable = ({ meters, meterDispatch, updateQueue, actions }) => {
               meterDispatch={meterDispatch}
               updateQueue={updateQueue}
               actions={actions}
+              handleMutateMeters={handleMutateMeters}
             />
           ))}
         </TableBody>

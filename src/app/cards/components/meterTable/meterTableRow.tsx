@@ -10,6 +10,7 @@ import {
 import { EditMeter } from "../editMeter/editMeter";
 import { Meter } from "../types";
 import { Actions, MeterAction } from "../../state/metersList.state";
+import { DeleteConfirmationModal } from "../deleteConfirmationModal/deleteConfrmationModal";
 
 interface MeterTableRowProps {
   meter: Meter;
@@ -18,9 +19,16 @@ interface MeterTableRowProps {
   actions: {
     closeOverlay: CloseOverlayAction;
   };
+  handleMutateMeters: (action: string) => void;
 }
 
-const MeterTableRow = ({ meter, meterDispatch, updateQueue, actions }) => {
+const MeterTableRow = ({
+  meter,
+  meterDispatch,
+  updateQueue,
+  actions,
+  handleMutateMeters,
+}) => {
   const [isChecked, setIsChecked] = useState(false);
 
   const handleCheckMeter = (action?: string) => {
@@ -88,7 +96,25 @@ const MeterTableRow = ({ meter, meterDispatch, updateQueue, actions }) => {
           >
             Edit
           </Button>
-          <Button variant="destructive">Delete</Button>
+          <Button
+            variant="destructive"
+            onClick={() =>
+              meterDispatch({
+                type: Actions.ADD_TO_UPDATE_QUEUE,
+                payload: meter.id,
+              })
+            }
+            overlay={
+              <DeleteConfirmationModal
+                actions={actions}
+                updateQueue={updateQueue}
+                meterDispatch={meterDispatch}
+                handleMutateMeters={handleMutateMeters}
+              />
+            }
+          >
+            Delete
+          </Button>
         </Flex>
       </TableCell>
     </TableRow>
