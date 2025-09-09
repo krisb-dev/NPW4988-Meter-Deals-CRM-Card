@@ -46,16 +46,18 @@ const MeterTableRow = ({ meter, meterDispatch, updateQueue, actions }) => {
   };
 
   const handleEditClick = () => {
-    console.log("adding meter to updateQueue", meter.id);
     const isInQueue = updateQueue.some((item) => item.id === meter.id);
 
     if (!isInQueue) {
-      console.log("not in queue, dispatching");
       meterDispatch({
         type: Actions.ADD_TO_UPDATE_QUEUE,
         payload: meter.id,
       });
     }
+  };
+
+  const handleDeleteClick = () => {
+    console.log("handleDeleteClick");
   };
 
   useEffect(() => {

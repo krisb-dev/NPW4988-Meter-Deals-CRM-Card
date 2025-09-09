@@ -22,7 +22,7 @@ import { Actions, MeterAction } from "../../state/metersList.state";
 interface EditMeterProps {
   meters: Meter[];
   meterDispatch: Dispatch<MeterAction>;
-  handleMutateMeters?: (action: MeterMutation) => void;
+  handleMutateMeters?: (action: MeterMutation, meters: Meter[]) => void;
   actions: {
     closeOverlay: CloseOverlayAction;
   };
@@ -48,6 +48,9 @@ const EditMeter = ({
   actions,
   singleEdit,
 }: EditMeterProps) => {
+  // Early return if none of them meters
+  if (!meters || meters.length === 0) return;
+
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -64,7 +67,6 @@ const EditMeter = ({
           parseDateForHubSpot(formValues.supply_end_date) ?? undefined,
       };
 
-      console.log("meters to update", meters);
       const metersToUpdate = meters.map((meter: Meter) => {
         const updatedProperties = {
           mpxn: meter.properties.mpxn,
@@ -77,12 +79,11 @@ const EditMeter = ({
         };
       });
 
-      console.log("ready to update", metersToUpdate);
-
-      // Optimistically update the UI
       meterDispatch({ type: Actions.UPDATE_METERS, payload: metersToUpdate });
 
-      await handleMutateMeters("update", metersToUpdate);
+      if (handleMutateMeters) {
+        await handleMutateMeters("update", metersToUpdate);
+      }
 
       setIsSuccess(true);
     } catch (error) {

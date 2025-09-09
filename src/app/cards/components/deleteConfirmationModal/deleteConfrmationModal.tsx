@@ -30,8 +30,6 @@ const DeleteConfirmationModal = ({
   handleMutateMeters,
 }: DeleteConfirmationModalProps) => {
   const handleDeletion = async () => {
-    console.log("Deleting The Meters", updateQueue);
-
     try {
       meterDispatch({ type: Actions.UNASSOCIATE_METERS, payload: updateQueue });
       await handleMutateMeters("unassociate");
@@ -45,10 +43,9 @@ const DeleteConfirmationModal = ({
         <Text>You are deleting the following meters:</Text>
 
         <List>
-          <Text>{JSON.stringify(updateQueue)}</Text>
-          {/* {updateQueue.map((meter) => (
+          {updateQueue.map((meter) => (
             <Text key={meter.id}>{meter.properties.mpxn}</Text>
-          ))} */}
+          ))}
         </List>
       </ModalBody>
       <ModalFooter>

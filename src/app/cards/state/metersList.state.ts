@@ -82,6 +82,7 @@ export const metersReducer = (state, action) => {
       const updateQueue = [...state.updateQueue, ...updateQueueMeters];
       return { ...state, data: updatdMeterList, updateQueue };
 
+    // Adds single meter to udpate queue
     case Actions.ADD_TO_UPDATE_QUEUE:
       const meterId = action.payload;
       const currentQueue = state.updateQueue;
@@ -98,8 +99,6 @@ export const metersReducer = (state, action) => {
     case Actions.ADD_ALL_TO_UPDATE_QUEUE:
       const allUpdateQueue = state.data;
 
-      console.log("allUpdateQueue", allUpdateQueue);
-
       return {
         ...state,
         updateQueue: allUpdateQueue,
@@ -115,12 +114,14 @@ export const metersReducer = (state, action) => {
         ...state,
         updateQueue: removeItemNewQueue,
       };
+
     // Remove All Item from Queue
     case Actions.REMOVE_ALL_FROM_UPDATE_QUEUE:
       return {
         ...state,
         updateQueue: [],
       };
+
     // Unasociate Meters
     case Actions.UNASSOCIATE_METERS:
       const meterIdsToUnassociate = action.payload.map((meter) => {
@@ -135,9 +136,6 @@ export const metersReducer = (state, action) => {
         data: metersFilteredUnsassociatedIds,
       };
     case Actions.UPDATE_METERS:
-      // Updates the main state with the updates
-
-      console.log("UPDATE_METERS", action.payload);
       const updateQueueIds = action.payload.map((meter) => {
         return meter.id;
       });
@@ -150,45 +148,6 @@ export const metersReducer = (state, action) => {
 
       return { ...state, data: updatedMetersList };
 
-    // case Actions.QUEUE_PROPERTY_UPDATES:
-    //   const { meterIds, updates } = action.payload;
-    //   const newUpdateQueue = [...state.updateQueue];
-
-    //   meterIds.forEach((meterId) => {
-    //     const existingIndex = newUpdateQueue.findIndex(
-    //       (item) => item.id === meterId
-    //     );
-
-    //     if (existingIndex >= 0) {
-    //       newUpdateQueue[existingIndex] = {
-    //         ...newUpdateQueue[existingIndex],
-    //         updates: { ...newUpdateQueue[existingIndex].updates, ...updates },
-    //       };
-    //     } else {
-    //       newUpdateQueue.push({ id: meterId, updates });
-    //     }
-    //   });
-
-    //   return { ...state, updateQueue: newUpdateQueue };
-    case Actions.APPLY_QUEUED_UPDATES:
-      const updatedData = state.data.map((meter) => {
-        const queuedUpdate = state.updateQueue.find(
-          (item) => item.id === meter.id
-        );
-        if (queuedUpdate) {
-          return {
-            ...meter,
-            properties: { ...meter.properties, ...queuedUpdate.updates },
-          };
-        }
-        return meter;
-      });
-
-      return {
-        ...state,
-        data: updatedData,
-        // Keep the updateQueue unchanged!
-      };
     case Actions.CLEAR_UPDATE_QUEUE:
       return {
         ...state,

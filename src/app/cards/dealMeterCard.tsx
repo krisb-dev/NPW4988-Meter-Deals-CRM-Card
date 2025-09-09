@@ -81,15 +81,13 @@ const Extension = ({ context, actions, addAlert, runServerlessFunction }) => {
       setIsUpdating(true);
 
       // Do The Update
-      const updateResponse = await hubspot.fetch(
+      await hubspot.fetch(
         "https://risk-nav.marketingpod.dev/hs/serverless/api/v1/update-meters",
         {
           method: "POST",
           body: metersToUpdate,
         }
       );
-
-      console.log("updateResponse", updateResponse);
 
       addAlert({
         title: "Meters updated",
