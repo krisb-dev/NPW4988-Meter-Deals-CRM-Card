@@ -14,6 +14,8 @@ exports.main = async (context = {}) => {
     return { statusCode: 401, body: { error: "Unauthorized" } };
   }
 
+  console.log("Body", context.body);
+
   const url = `https://api.hubapi.com/crm/v3/objects/${METERS_OBJECT_ID}/batch/update`;
 
   const token = process.env.HS_ACCESS_TOKEN;
@@ -39,6 +41,8 @@ exports.main = async (context = {}) => {
         inputs,
       },
     });
+
+    console.log("Api Response", updatedMeterData.data);
 
     return updatedMeterData.data;
   } catch (error) {

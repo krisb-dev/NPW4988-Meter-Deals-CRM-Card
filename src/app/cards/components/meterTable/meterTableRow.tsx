@@ -1,4 +1,4 @@
-import { Dispatch, useState } from "react";
+import { Dispatch, useEffect, useState } from "react";
 import {
   TableRow,
   TableCell,
@@ -13,38 +13,50 @@ import { Actions, MeterAction } from "../../state/metersList.state";
 interface MeterTableRowProps {
   meter: Meter;
   meterDispatch: Dispatch<MeterAction>;
+  updateQueue: Meter[];
 }
 
-const MeterTableRow = ({ meter, meterDispatch }) => {
+const MeterTableRow = ({ meter, meterDispatch, updateQueue }) => {
   const [isChecked, setIsChecked] = useState(false);
 
-  const handleCheckMeter = () => {
-    setIsChecked((prev) => {
-      const newValue = !prev;
+  const handleCheckMeter = (action?: string) => {
+    const isInQueue = updateQueue.some((item) => item.id === meter.id);
 
-      if (newValue) {
-        meterDispatch({ type: Actions.ADD_TO_UPDATE_QUEUE, payload: meter.id });
+    if (action === "init") {
+      setIsChecked(isInQueue);
+    } else {
+      setIsChecked((prev) => !prev);
+
+      if (!isChecked) {
+        meterDispatch({
+          type: Actions.ADD_TO_UPDATE_QUEUE,
+          payload: meter.id,
+        });
       } else {
         meterDispatch({
           type: Actions.REMOVE_FROM_UPDATE_QUEUE,
           payload: meter.id,
         });
       }
-
-      return newValue;
-    });
+    }
   };
+
+  useEffect(() => {
+    const isInQueue = updateQueue.some((item) => item.id === meter.id);
+    setIsChecked(isInQueue);
+  }, [updateQueue, meter.id]);
+
   return (
     <TableRow>
       <TableCell width="min">
-        <Checkbox onChange={handleCheckMeter} />
+        <Checkbox onChange={() => handleCheckMeter()} checked={isChecked} />
       </TableCell>
       <TableCell width="min">{meter.properties.mpxn}</TableCell>
       <TableCell width="min">{meter.properties.supply_start_date}</TableCell>
       <TableCell width="min">{meter.properties.supply_end_date}</TableCell>
       <TableCell>
         <Flex gap="sm">
-          <Button overlay={<EditMeter meter={meter} />}>Edit</Button>
+          <Button overlay={<EditMeter meters={meter} />}>Edit</Button>
           <Button variant="destructive">Delete</Button>
         </Flex>
       </TableCell>

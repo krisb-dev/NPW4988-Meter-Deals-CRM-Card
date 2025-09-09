@@ -8,3 +8,5 @@ export interface Meter {
   id: string;
   properties: MeterProperties;
 }
+
+export type MeterMutation = "unassociate" | "update";

@@ -19,9 +19,10 @@ import { MeterAction } from "../../state/metersList.state";
 interface MeterTableProps {
   meters: Meter[];
   meterDispatch: Dispatch<MeterAction>;
+  updateQueue: Meter[];
 }
 
-const MeterTable = ({ meters, meterDispatch }) => {
+const MeterTable = ({ meters, meterDispatch, updateQueue }) => {
   return (
     <>
       <Table bordered={true}>
@@ -40,6 +41,7 @@ const MeterTable = ({ meters, meterDispatch }) => {
               key={meter.id}
               meter={meter}
               meterDispatch={meterDispatch}
+              updateQueue={updateQueue}
             />
           ))}
         </TableBody>

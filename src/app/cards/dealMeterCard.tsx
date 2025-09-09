@@ -28,22 +28,24 @@ import {
 } from "./state/metersList.state";
 import { MeterModal } from "./components/meterModal/meterModal";
 import { MeterTable } from "./components/meterTable/meterTable";
-import { Meter } from "./components/types";
+import { Meter, MeterMutation } from "./components/types";
 import { EditMeter } from "./components/editMeter/editMeter";
 import { DeleteConfirmationModal } from "./components/deleteConfirmationModal/deleteConfrmationModal";
 
 hubspot.extend(({ actions, context, runServerlessFunction }) => (
   <Extension
     context={context}
+    actions={actions}
     addAlert={(actions as any).addAlert}
     runServerlessFunction={runServerlessFunction}
   />
 ));
 
-const Extension = ({ context, addAlert, runServerlessFunction }) => {
+const Extension = ({ context, actions, addAlert, runServerlessFunction }) => {
   const [isFetching, setIsFetching] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [refreshRequired, setRefreshRequired] = useState(false);
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
 
   const [state, dispatch] = useReducer(metersReducer, initialMetersState);
   const recordId = context.crm.objectId;
@@ -74,16 +76,20 @@ const Extension = ({ context, addAlert, runServerlessFunction }) => {
     setIsFetching(false);
   }, []);
 
-  const handleUpdateMeter = async () => {
+  const handleUpdateMeter = async (metersToUpdate) => {
     try {
       setIsUpdating(true);
-      await hubspot.fetch(
+
+      // Do The Update
+      const updateResponse = await hubspot.fetch(
         "https://risk-nav.marketingpod.dev/hs/serverless/api/v1/update-meters",
         {
           method: "POST",
-          body: state.data,
+          body: metersToUpdate,
         }
       );
+
+      console.log("updateResponse", updateResponse);
 
       addAlert({
         title: "Meters updated",
@@ -132,12 +138,28 @@ const Extension = ({ context, addAlert, runServerlessFunction }) => {
     setIsUpdating(false);
   };
 
-  const handleMutateMeters = async (action: "unassociate" | "update") => {
+  const handleMutateMeters = async (
+    action: MeterMutation,
+    meterUpdates?: Meter[]
+  ) => {
     if (action === "unassociate") {
       handleUnassociateMeter();
     } else if (action === "update") {
-      handleUpdateMeter();
+      handleUpdateMeter(meterUpdates);
     }
+  };
+
+  const handleSelectAll = () => {
+    setIsSelectingAll((prev) => {
+      const newValue = !prev;
+
+      if (newValue) {
+        dispatch({ type: Actions.ADD_ALL_TO_UPDATE_QUEUE });
+      } else {
+        dispatch({ type: Actions.REMOVE_ALL_FROM_UPDATE_QUEUE });
+      }
+      return newValue;
+    });
   };
 
   useEffect(() => {
@@ -175,11 +197,15 @@ const Extension = ({ context, addAlert, runServerlessFunction }) => {
   return (
     <>
       {state.data.length > 0 || state.updateQueue.length > 0 ? (
-        <>
-          <MeterTable meters={state.data} meterDispatch={dispatch} />
-          <ButtonRow>
-            <Button overlay={<EditMeter meters={state.updateQueue} />}>
-              Edit selected meters
+        <Flex direction="column" gap="xs">
+          <Flex gap="sm">
+            <Button
+              variant="primary"
+              onClick={() => {
+                handleSelectAll();
+              }}
+            >
+              {!isSelectingAll ? <>Select all</> : <>Deselect all</>}
             </Button>
             <CrmActionButton
               actionType="OPEN_RECORD_ASSOCIATION_FORM"
@@ -195,16 +221,6 @@ const Extension = ({ context, addAlert, runServerlessFunction }) => {
             >
               Add Meter
             </CrmActionButton>
-            <Button
-              variant="destructive"
-              type="button"
-              onClick={() => {
-                console.log("Deleting!!!");
-              }}
-              overlay={<DeleteConfirmationModal actions={{}} />}
-            >
-              Remove selected meters
-            </Button>
             {refreshRequired && (
               <Button
                 type="button"
@@ -218,8 +234,47 @@ const Extension = ({ context, addAlert, runServerlessFunction }) => {
                 Refresh meters
               </Button>
             )}
+          </Flex>
+          <MeterTable
+            meters={state.data}
+            updateQueue={state.updateQueue}
+            meterDispatch={dispatch}
+          />
+          <ButtonRow>
+            <Button
+              overlay={
+                <EditMeter
+                  meters={state.updateQueue}
+                  meterDispatch={dispatch}
+                  handleMutateMeters={handleMutateMeters}
+                  actions={actions}
+                />
+              }
+              disabled={state.updateQueue.length > 0 ? false : true}
+            >
+              Edit selected meters
+            </Button>
+
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={() => {
+                console.log("Deleting!!!");
+              }}
+              overlay={
+                <DeleteConfirmationModal
+                  actions={actions}
+                  updateQueue={state.updateQueue}
+                  meterDispatch={dispatch}
+                  handleMutateMeters={handleMutateMeters}
+                />
+              }
+              disabled={state.updateQueue.length > 0 ? false : true}
+            >
+              Remove selected meters
+            </Button>
           </ButtonRow>
-        </>
+        </Flex>
       ) : (
         <EmptyState
           title="No Associated Meters"
