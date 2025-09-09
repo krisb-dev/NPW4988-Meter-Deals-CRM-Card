@@ -8,6 +8,7 @@ import {
   Button,
   Flex,
   Checkbox,
+  CloseOverlayAction,
 } from "@hubspot/ui-extensions";
 import { Meter } from "../types";
 import { CrmActionButton } from "@hubspot/ui-extensions/crm";
@@ -20,9 +21,12 @@ interface MeterTableProps {
   meters: Meter[];
   meterDispatch: Dispatch<MeterAction>;
   updateQueue: Meter[];
+  actions: {
+    closeOverlay: CloseOverlayAction;
+  };
 }
 
-const MeterTable = ({ meters, meterDispatch, updateQueue }) => {
+const MeterTable = ({ meters, meterDispatch, updateQueue, actions }) => {
   return (
     <>
       <Table bordered={true}>
@@ -42,6 +46,7 @@ const MeterTable = ({ meters, meterDispatch, updateQueue }) => {
               meter={meter}
               meterDispatch={meterDispatch}
               updateQueue={updateQueue}
+              actions={actions}
             />
           ))}
         </TableBody>

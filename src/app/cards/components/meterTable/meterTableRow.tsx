@@ -5,6 +5,7 @@ import {
   Checkbox,
   Flex,
   Button,
+  CloseOverlayAction,
 } from "@hubspot/ui-extensions";
 import { EditMeter } from "../editMeter/editMeter";
 import { Meter } from "../types";
@@ -14,9 +15,12 @@ interface MeterTableRowProps {
   meter: Meter;
   meterDispatch: Dispatch<MeterAction>;
   updateQueue: Meter[];
+  actions: {
+    closeOverlay: CloseOverlayAction;
+  };
 }
 
-const MeterTableRow = ({ meter, meterDispatch, updateQueue }) => {
+const MeterTableRow = ({ meter, meterDispatch, updateQueue, actions }) => {
   const [isChecked, setIsChecked] = useState(false);
 
   const handleCheckMeter = (action?: string) => {
@@ -41,6 +45,19 @@ const MeterTableRow = ({ meter, meterDispatch, updateQueue }) => {
     }
   };
 
+  const handleEditClick = () => {
+    console.log("adding meter to updateQueue", meter.id);
+    const isInQueue = updateQueue.some((item) => item.id === meter.id);
+
+    if (!isInQueue) {
+      console.log("not in queue, dispatching");
+      meterDispatch({
+        type: Actions.ADD_TO_UPDATE_QUEUE,
+        payload: meter.id,
+      });
+    }
+  };
+
   useEffect(() => {
     const isInQueue = updateQueue.some((item) => item.id === meter.id);
     setIsChecked(isInQueue);
@@ -56,7 +73,19 @@ const MeterTableRow = ({ meter, meterDispatch, updateQueue }) => {
       <TableCell width="min">{meter.properties.supply_end_date}</TableCell>
       <TableCell>
         <Flex gap="sm">
-          <Button overlay={<EditMeter meters={meter} />}>Edit</Button>
+          <Button
+            overlay={
+              <EditMeter
+                meters={updateQueue}
+                singleEdit={true}
+                meterDispatch={meterDispatch}
+                actions={actions}
+              />
+            }
+            onClick={() => handleCheckMeter()}
+          >
+            Edit
+          </Button>
           <Button variant="destructive">Delete</Button>
         </Flex>
       </TableCell>

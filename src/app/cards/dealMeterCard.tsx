@@ -239,6 +239,7 @@ const Extension = ({ context, actions, addAlert, runServerlessFunction }) => {
             meters={state.data}
             updateQueue={state.updateQueue}
             meterDispatch={dispatch}
+            actions={actions}
           />
           <ButtonRow>
             <Button

@@ -22,10 +22,11 @@ import { Actions, MeterAction } from "../../state/metersList.state";
 interface EditMeterProps {
   meters: Meter[];
   meterDispatch: Dispatch<MeterAction>;
-  handleMutateMeters: (action: MeterMutation) => void;
+  handleMutateMeters?: (action: MeterMutation) => void;
   actions: {
     closeOverlay: CloseOverlayAction;
   };
+  singleEdit?: boolean;
 }
 
 const parseDateForHubSpot = (dateString: string): string | null => {
@@ -45,6 +46,7 @@ const EditMeter = ({
   meterDispatch,
   handleMutateMeters,
   actions,
+  singleEdit,
 }: EditMeterProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -92,20 +94,36 @@ const EditMeter = ({
     setIsUpdating(false);
   };
 
+  const handleClose = () => {
+    if (singleEdit) {
+      meterDispatch({
+        type: Actions.REMOVE_FROM_UPDATE_QUEUE,
+        payload: meters[0].id,
+      });
+    }
+
+    actions.closeOverlay("edit-meter-panel");
+  };
+
   return (
     <Panel id="edit-meter-panel" title="Edit Meter Properties">
       <PanelBody>
         <PanelSection>
-          {meters?.length > 1 ? (
-            <Text>You are editing the following MPXNs:</Text>
-          ) : null}
+          {singleEdit ? (
+            <>
+              <Text>Editing single meter</Text>
+            </>
+          ) : (
+            <>
+              <Text>You are editing the following MPXNs:</Text>
+              <List variant="unordered-styled">
+                {meters?.map((meter) => (
+                  <Text key={meter.id}>{meter.properties.mpxn}</Text>
+                ))}
+              </List>
+            </>
+          )}
 
-          <List variant="unordered-styled">
-            {meters?.length > 1 &&
-              meters?.map((meter) => (
-                <Text key={meter.id}>{meter.properties.mpxn}</Text>
-              ))}
-          </List>
           {isUpdating && (
             <Flex>
               <LoadingSpinner
@@ -127,14 +145,13 @@ const EditMeter = ({
           )}
 
           <Form onSubmit={(values) => handleFormSubmit(values)}>
-            {meters?.length === 1 && (
+            {JSON.stringify(meters)}
+            {singleEdit && meters.length > 0 && (
               <Input
                 label="MPXN"
                 name="mpxn"
                 readOnly={true}
-                value={
-                  meters?.length === 1 ? meters[0].properties.mpxn : undefined
-                }
+                value={meters[0]?.properties.mpxn}
               />
             )}
             <Flex direction="column" gap="sm">
@@ -152,7 +169,7 @@ const EditMeter = ({
                   type="button"
                   variant="secondary"
                   onClick={() => {
-                    actions.closeOverlay("edit-meter-panel");
+                    handleClose();
                   }}
                 >
                   Back
